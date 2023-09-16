@@ -1,9 +1,6 @@
-import 'dart:convert';
-
 import 'package:adumas/screens/auth/signup_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../constant/HColor.dart';
 import '../../core/services/auth_service.dart';
@@ -33,20 +30,20 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  String? userMail;
-  void checkUser() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+  // String? userMail;
+  // void checkUser() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    setState(() {
-      userMail = prefs.getString('usermail');
-    });
-  }
+  //   setState(() {
+  //     userMail = prefs.getString('usermail');
+  //   });
+  // }
 
-  @override
-  void initState() {
-    checkUser();
-    super.initState();
-  }
+  // @override
+  // void initState() {
+  //   checkUser();
+  //   super.initState();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Email',
+                        'Username',
                         style: GoogleFonts.poppins(
                           textStyle: const TextStyle(
                             fontSize: 16,
@@ -88,13 +85,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       TextField(
-                        keyboardType: TextInputType.emailAddress,
+                        keyboardType: TextInputType.text,
                         controller: emailController,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10.0),
                           ),
-                          hintText: 'farhan@gmail.com',
+                          hintText: 'farhanzaidann',
                           hintStyle: GoogleFonts.poppins(),
                         ),
                       ),
@@ -166,10 +163,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     if (_signInFormKey.currentState!.validate()) {
                       login();
                       // print("object");
-                      SharedPreferences prefs =
-                          await SharedPreferences.getInstance();
-                      await prefs.setString("${userMail}", jsonDecode('email'));
-                      prefs.setBool("isLoggedIn", true);
+                      // SharedPreferences prefs =
+                      //     await SharedPreferences.getInstance();
+                      // await prefs.setString("${userMail}", jsonDecode('email'));
+                      // prefs.setBool("isLoggedIn", true);
                     }
                   },
                   child: Center(

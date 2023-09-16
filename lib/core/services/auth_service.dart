@@ -1,16 +1,14 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, unused_local_variable
 
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:adumas/models/user.dart';
 import 'package:adumas/screens/pages/home.dart';
 import 'package:adumas/widgets/error_handler.dart';
 import 'package:flutter/material.dart';
 
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../widgets/my_snackbar.dart';
 import '../env.dart';
@@ -18,26 +16,35 @@ import '../env.dart';
 class AuthService {
   void signUp({
     required BuildContext context,
-    required String email,
+    required String username,
     required String password,
     required String firstName,
-    required String lastName,
+    required String phoneNumber,
+    required String level,
+    required String nik,
   }) async {
     try {
-      User user = User(
-        firstName: firstName,
-        lastName: lastName,
-        email: email,
-        password: password,
-      );
+      var res = await http.post(Uri.parse('$kbApi/auth/register'),
+          body: jsonEncode(
+            {
+              "firstName": firstName,
+              "email": "$username@gmail.com",
+              "phoneNumber": phoneNumber,
+              "password": password,
+              "level": level,
+            },
+          ));
 
-      http.Response res = await http.post(
-        Uri.parse('$uri/api/signup'),
-        body: user.toJson(),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-      );
+      var datas = jsonDecode(res.body);
+      var _id = datas["user"]["_id"];
+
+      var res2 = await mRegister(
+          context: context,
+          firstName: firstName,
+          username: username,
+          phoneNumber: phoneNumber,
+          nik: nik,
+          idU: _id);
 
       httpErrorHandler(
         response: res,
@@ -47,7 +54,39 @@ class AuthService {
         },
       );
     } catch (e) {
-      print(e);
+      showSnackBar(context, e.toString());
+    }
+  }
+
+  Future mRegister({
+    required BuildContext context,
+    required String firstName,
+    required String idU,
+    required String username,
+    required String phoneNumber,
+    required String nik,
+  }) async {
+    try {
+      var token = await getSysToken();
+
+      http.Response res = await http.post(Uri.parse('$kbApi/masyarakat'),
+          body: jsonEncode({
+            "name": firstName,
+            "username": username,
+            "phoneNumber": phoneNumber,
+            "nik": nik,
+            "users": [idU]
+          }),
+          headers: {'Authorization': "Bearer $token"});
+
+      // httpErrorHandler(
+      //   response: res,
+      //   context: context,
+      //   onSuccess: () {
+      //     showSnackBar(context, 'Berhasil');
+      //   },
+      // );
+    } catch (e) {
       showSnackBar(context, e.toString());
     }
   }
@@ -59,16 +98,15 @@ class AuthService {
   }) async {
     try {
       http.Response res = await http.post(
-        Uri.parse('$uri/api/login'),
+        Uri.parse('$kbApi/auth/login'),
         body: jsonEncode({
-          'email': email,
+          'email': "$email@gmail.com",
           'password': password,
         }),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
       );
+
       // showSnackBar(context, "${res.statusCode}");
+      log(res.body.toString());
       log(res.statusCode.toString());
       // if (res.statusCode == 400) {
       //   showSnackBar(context, "okeee");
@@ -77,11 +115,6 @@ class AuthService {
           response: res,
           context: context,
           onSuccess: () async {
-            SharedPreferences prefs = await SharedPreferences.getInstance();
-            await prefs.setString('usermail', jsonDecode(res.body)['email']);
-            await prefs.setString('lastName', jsonDecode(res.body)['lastName']);
-            await prefs.setString(
-                'firstName', jsonDecode(res.body)['firstName']);
             Navigator.of(context).pushAndRemoveUntil(
                 // ignore: prefer_const_constructors
                 MaterialPageRoute(builder: (context) => HomeScreen()),

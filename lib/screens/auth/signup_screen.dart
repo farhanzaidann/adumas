@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../constant/HColor.dart';
+import '../../constant/HColor.dart' as c;
 import '../../core/services/auth_service.dart';
 import '../../widgets/my_snackbar.dart';
 import 'login_screen.dart';
@@ -16,19 +16,22 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   final _signupKey = GlobalKey<FormState>();
   final TextEditingController firstNameController = TextEditingController();
-  final TextEditingController lastNameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
+  final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController phoneNumberController = TextEditingController();
+  final TextEditingController nikController = TextEditingController();
   final AuthService authService = AuthService();
-    bool _passwordVisible = true;
+  bool _passwordVisible = true;
 
   void signup() {
     authService.signUp(
         context: context,
-        email: emailController.text,
-        password: passwordController.text,
         firstName: firstNameController.text,
-        lastName: "masyarakat");
+        username: usernameController.text,
+        password: passwordController.text,
+        phoneNumber: phoneNumberController.text,
+        level: "masyarakat",
+        nik: nikController.text);
   }
 
   @override
@@ -42,11 +45,16 @@ class _SignupScreenState extends State<SignupScreen> {
       child: Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: true,
+          leading: IconButton(onPressed: () {
+            Navigator.pop(context);
+          }, icon: Icon(Icons.arrow_back, color: c.black,)),
         ),
         resizeToAvoidBottomInset: true,
         body: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.only(top: 90, left: 10, right: 10),
+            padding: EdgeInsets.symmetric(
+              horizontal: MediaQuery.of(context).size.width / 20,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -60,7 +68,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Username',
+                        'Nama',
                         style: GoogleFonts.poppins(
                             textStyle: const TextStyle(
                           fontSize: 14,
@@ -74,6 +82,28 @@ class _SignupScreenState extends State<SignupScreen> {
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10.0),
                           ),
+                          hintText: 'Farhan Zaidan',
+                          hintStyle: GoogleFonts.poppins(),
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      Text(
+                        'Username',
+                        style: GoogleFonts.poppins(
+                            textStyle: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        )),
+                      ),
+                      TextField(
+                        keyboardType: TextInputType.text,
+                        controller: usernameController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
                           hintText: 'farhanzaidann',
                           hintStyle: GoogleFonts.poppins(),
                         ),
@@ -82,7 +112,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         height: 20,
                       ),
                       Text(
-                        'Email',
+                        'Nomor HP',
                         style: GoogleFonts.poppins(
                             textStyle: const TextStyle(
                           fontSize: 14,
@@ -90,13 +120,35 @@ class _SignupScreenState extends State<SignupScreen> {
                         )),
                       ),
                       TextField(
-                        keyboardType: TextInputType.emailAddress,
-                        controller: emailController,
+                        keyboardType: TextInputType.number,
+                        controller: phoneNumberController,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10.0),
                           ),
-                          hintText: 'farhan@gmail.com',
+                          hintText: '081234567890',
+                          hintStyle: GoogleFonts.poppins(),
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      Text(
+                        'NIK',
+                        style: GoogleFonts.poppins(
+                            textStyle: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        )),
+                      ),
+                      TextField(
+                        keyboardType: TextInputType.number,
+                        controller: nikController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          hintText: '123456',
                           hintStyle: GoogleFonts.poppins(),
                         ),
                       ),
@@ -116,12 +168,12 @@ class _SignupScreenState extends State<SignupScreen> {
                         controller: passwordController,
                         obscureText: _passwordVisible,
                         decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          hintText: '********',
-                          hintStyle: GoogleFonts.poppins(),
-                          suffixIcon: IconButton(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            hintText: '********',
+                            hintStyle: GoogleFonts.poppins(),
+                            suffixIcon: IconButton(
                               onPressed: () {
                                 setState(() {
                                   _passwordVisible = !_passwordVisible;
@@ -132,10 +184,9 @@ class _SignupScreenState extends State<SignupScreen> {
                                 _passwordVisible
                                     ? Icons.visibility_off
                                     : Icons.visibility,
-                                color: primary,
+                                color: c.primary,
                               ),
-                            )
-                        ),
+                            )),
                       ),
                       const SizedBox(
                         height: 20,
@@ -143,9 +194,11 @@ class _SignupScreenState extends State<SignupScreen> {
                       GestureDetector(
                         onTap: () {
                           if (_signupKey.currentState!.validate()) {
-                            if (emailController.text.isEmpty ||
+                            if (usernameController.text.isEmpty ||
                                 passwordController.text.isEmpty ||
-                                firstNameController.text.isEmpty) {
+                                firstNameController.text.isEmpty ||
+                                phoneNumberController.text.isEmpty ||
+                                nikController.text.isEmpty) {
                               showSnackBar(context, 'Form harus diisi');
                             } else if (passwordController.text.length < 6) {
                               showSnackBar(
