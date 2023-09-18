@@ -102,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         'Password',
                         style: GoogleFonts.poppins(
                           textStyle: const TextStyle(
-                            fontSize: 14,
+                            fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
                         ),

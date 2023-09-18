@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:adumas/core/cache/network.dart';
 import 'package:adumas/screens/pages/home.dart';
 import 'package:adumas/widgets/error_handler.dart';
 import 'package:flutter/material.dart';
@@ -97,6 +98,8 @@ class AuthService {
     required String password,
   }) async {
     try {
+      var token = await getSysToken();
+
       http.Response res = await http.post(
         Uri.parse('$kbApi/auth/login'),
         body: jsonEncode({
@@ -105,16 +108,49 @@ class AuthService {
         }),
       );
 
-      // showSnackBar(context, "${res.statusCode}");
-      log(res.body.toString());
-      log(res.statusCode.toString());
-      // if (res.statusCode == 400) {
-      //   showSnackBar(context, "okeee");
-      // }
+      var data = jsonDecode(res.body);
+
+      var level = data["user"]["level"];
+
+      var ids = data["user"]["_id"];
+
+      log(res.body);
+
+      http.Response getUser = await http.get(
+          Uri.parse('$kbApi/Users/$ids?\$lookup[*]=*'),
+          headers: {"Authorization": "Bearer $token"});
+
+      var datas = jsonDecode(getUser.body);
+
       httpErrorHandler(
           response: res,
           context: context,
           onSuccess: () async {
+            if (data["user"]["level"] == "masyarakat") {
+              sessionManager.savePref(
+                data["token"],
+                data["user"]["_id"],
+                datas["masyarakat"][0]["username"],
+                datas["masyarakat"][0]["name"],
+                datas["masyarakat"][0]["nik"],
+                data["user"]["level"],
+                data["user"]["phoneNumber"],
+              );
+            }
+            if (data["user"]["level"] == "petugas") {
+              sessionManager.savePref(
+                data["token"],
+                data["user"]["_id"],
+                datas["petugas"][0]["username"],
+                datas["petugas"][0]["name"],
+                datas["petugas"][0]["nik"],
+                datas["petugas"][0]["level"],
+                data["user"]["phoneNumber"],
+              );
+            }
+
+            print("stored");
+
             Navigator.of(context).pushAndRemoveUntil(
                 // ignore: prefer_const_constructors
                 MaterialPageRoute(builder: (context) => HomeScreen()),

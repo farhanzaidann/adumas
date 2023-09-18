@@ -1,7 +1,7 @@
 import 'package:adumas/constant/HColor.dart' as c;
+import 'package:adumas/core/cache/network.dart';
 import 'package:adumas/models/complaint.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/services/complaint_service.dart';
 import '../auth/login_screen.dart';
@@ -18,22 +18,22 @@ class _HomeScreenState extends State<HomeScreen> {
   late List<Complaint> contacts;
   bool _isLoading = false;
   bool _isError = false;
-  String? firstname;
-  String? masyarakat;
-  String? usermail;
-  void checkUser() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    setState(() {
-      firstname = prefs.getString('firstName');
-      usermail = prefs.getString('usermail');
-      masyarakat = prefs.getString('lastName');
-    });
-  }
+  String? name;
+  String? username;
+  String? level;
+  String? token;
 
   @override
   void initState() {
-    checkUser();
+    sessionManager.getPref().then((value) {
+      setState(() {
+        token = sessionManager.nToken;
+        name = sessionManager.nName;
+        username = sessionManager.nUserName;
+        level = sessionManager.nLevel;
+      });
+      // print(" IKI TOKEN ${token}");
+    });
     getContacts();
     super.initState();
   }
@@ -66,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ? Scaffold(
                 appBar: AppBar(
                   automaticallyImplyLeading: false,
-                  title: Text("Hai, ${firstname}"),
+                  title: Text("Hai, $name"),
                   backgroundColor: Colors.black,
                 ),
                 body: const Center(child: Text("Tidak ada laporan")),
@@ -87,16 +87,12 @@ class _HomeScreenState extends State<HomeScreen> {
             : Scaffold(
                 appBar: AppBar(
                   automaticallyImplyLeading: false,
-                  title: Text("Hai, ${firstname}"),
+                  title: Text("Hai, $name"),
                   backgroundColor: Colors.black,
                   actions: [
                     IconButton(
                         onPressed: () async {
-                          SharedPreferences prefs =
-                              await SharedPreferences.getInstance();
-                          prefs.remove(
-                            "${usermail}",
-                          );
+                          sessionManager.clearSession();
                           // ignore: use_build_context_synchronously
                           Navigator.pushReplacement(context,
                               MaterialPageRoute(builder: (_) {
@@ -160,7 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                 ),
-                floatingActionButton: masyarakat == "masyarakat"
+                floatingActionButton: level == "masyarakat"
                     ? FloatingActionButton(
                         onPressed: () {
                           Navigator.push(
